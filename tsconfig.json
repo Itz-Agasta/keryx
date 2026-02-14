@@ -1,0 +1,3 @@
+{
+  "extends": "@keryx/config/tsconfig.base.json"
+}
