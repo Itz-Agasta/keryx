@@ -17,7 +17,7 @@ impl PgClient {
 
         Ok(PgClient { client })
     }
-    
+
     pub async fn show_tables(&self) -> Result<Vec<String>, Error> {
         let rows = self
             .client
