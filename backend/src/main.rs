@@ -5,10 +5,11 @@ use pg::PgClient;
 #[tokio::main]
 async fn main() -> Result<(), tokio_postgres::Error> {
     let client = PgClient::connect("host=localhost user=agasta dbname=nominatim").await?;
-
+    
+    let dbs = client.show_databases().await?;
     let tables = client.show_tables().await?;
 
-    for table in tables {
+    for table in dbs {
         println!("{}", table);
     }
 

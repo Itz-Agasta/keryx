@@ -17,7 +17,25 @@ impl PgClient {
 
         Ok(PgClient { client })
     }
+    
+    pub async fn show_databases(&self) -> Result<Vec<String>, Error> {
+        let rows = self.client.query("SELECT datname, pg_size_pretty(pg_database_size(datname)) 
+        FROM pg_database 
+        WHERE datistemplate = false;", &[])
+        .await?;
+        
+        let mut dbs = Vec::new();
+        for row in rows {
+            let dbname : &str = row.get(0);
+            dbs.push(dbname.to_string());
+        }
+        
+        Ok(dbs)
+    }
+    
+    // What schemas in current DB?
 
+    // what tables in the current Db
     pub async fn show_tables(&self) -> Result<Vec<String>, Error> {
         let rows = self
             .client
@@ -37,4 +55,7 @@ impl PgClient {
 
         Ok(tables)
     }
+    
+    // Show Viwes
+    // show functions
 }
