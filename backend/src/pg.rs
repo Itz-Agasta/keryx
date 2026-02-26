@@ -17,25 +17,48 @@ impl PgClient {
 
         Ok(PgClient { client })
     }
-    
+
+    /// Returns ALL dbs in the PostgreSQL server
     pub async fn show_databases(&self) -> Result<Vec<String>, Error> {
-        let rows = self.client.query("SELECT datname, pg_size_pretty(pg_database_size(datname)) 
+        let rows = self
+            .client
+            .query(
+                "SELECT datname, pg_size_pretty(pg_database_size(datname)) 
         FROM pg_database 
-        WHERE datistemplate = false;", &[])
-        .await?;
-        
+        WHERE datistemplate = false;",
+                &[],
+            )
+            .await?;
+
         let mut dbs = Vec::new();
         for row in rows {
-            let dbname : &str = row.get(0);
+            let dbname: &str = row.get(0);
             dbs.push(dbname.to_string());
         }
-        
+
         Ok(dbs)
     }
-    
-    // What schemas in current DB?
 
-    // what tables in the current Db
+    /// Returns all schemas in the current database.
+    pub async fn show_schemas(&self) -> Result<Vec<String>, Error> {
+        let rows = self
+            .client
+            .query(
+                "SELECT schema_name
+                 FROM information_schema.schemata;",
+                &[],
+            )
+            .await?;
+
+        let schemas = rows
+            .iter()
+            .map(|row| row.get::<_, &str>(0).to_string())
+            .collect();
+
+        Ok(schemas)
+    }
+
+    // Returns all tables in the current database.
     pub async fn show_tables(&self) -> Result<Vec<String>, Error> {
         let rows = self
             .client
@@ -55,7 +78,45 @@ impl PgClient {
 
         Ok(tables)
     }
-    
-    // Show Viwes
-    // show functions
+
+    /// Returns all views in the `public` schema.
+    pub async fn show_views(&self) -> Result<Vec<String>, Error> {
+        let rows = self
+            .client
+            .query(
+                "SELECT viewname
+                 FROM pg_views
+                 WHERE schemaname = 'public';",
+                &[],
+            )
+            .await?;
+
+        let mut views = Vec::new();
+        for row in rows {
+            let viewname: &str = row.get(0);
+            views.push(viewname.to_string());
+        }
+
+        Ok(views)
+    }
+
+    /// Returns all functions in the current database.
+    pub async fn show_functions(&self) -> Result<Vec<String>, Error> {
+        let rows = self
+            .client
+            .query(
+                "SELECT routine_name
+                 FROM information_schema.routines
+                 WHERE routine_type = 'FUNCTION';",
+                &[],
+            )
+            .await?;
+
+        let functions = rows
+            .iter()
+            .map(|row| row.get::<_, &str>(0).to_string())
+            .collect();
+
+        Ok(functions)
+    }
 }
