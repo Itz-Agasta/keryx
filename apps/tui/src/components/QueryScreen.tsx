@@ -19,7 +19,8 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [showTableBrowser, setShowTableBrowser] = useState(false);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [showTableBrowser, setShowTableBrowser] = useState(true);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -29,9 +30,19 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
   }, []);
 
   const loadTables = async () => {
-    const response = await backend.send({ type: "getTables" });
-    if (response.type === "tables") {
-      setTables(response.payload);
+    setIsLoadingTables(true);
+    try {
+      const response = await backend.send({ type: "getTables" });
+      if (response.type === "tables") {
+        setTables(response.payload);
+        setError(null);
+      } else if (response.type === "error") {
+        setError(`Failed to load tables: ${response.payload.message}`);
+      }
+    } catch (err) {
+      setError(`Error loading tables: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsLoadingTables(false);
     }
   };
 
@@ -120,7 +131,7 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
             <Box paddingX={1}>
               <Text bold>Tables (Ctrl+R to refresh)</Text>
             </Box>
-            <TableBrowser tables={tables} onSelect={handleTableSelect} />
+            <TableBrowser tables={tables} onSelect={handleTableSelect} isLoading={isLoadingTables} />
           </Box>
         )}
 
