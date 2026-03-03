@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "fullscreen-ink": "^0.1.0",
     "ink": "^5.2.0",
     "ink-divider": "^4.1.1",
     "ink-select-input": "^6.2.0",
