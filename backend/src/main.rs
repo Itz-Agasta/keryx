@@ -1,28 +1,18 @@
-mod pg;
-
-use pg::PgClient;
+mod db;
+use db::PgClient;
 
 #[tokio::main]
 async fn main() -> Result<(), tokio_postgres::Error> {
-    let client = PgClient::connect("host=localhost user=agasta dbname=cli_test").await?;
+    let client = PgClient::connect("localhost", 5432, "cli_test", "agasta", "some-pass").await?;
 
-    // Testing
-    let _dbs = client.show_databases().await?;
-    let _tables = client.show_tables().await?;
-    let _schemas = client.show_schemas().await?;
-    let _views = client.show_views().await?;
-    let _functions = client.show_functions().await?;
+    // testing
+    let tables = client.get_tables().await?;
 
-    for db in _dbs {
-        println!("{}", db);
+    for table in &tables {
+        println!("{}", table.name);
     }
-    print!("\n");
-    for table in _tables {
-        println!("{}", table);
-    }
-
-    // TODO: perform v1 test .. i have to plan how can i send this data
-    // to the cli in an optimzie manner.
+    
+    // TODO: Add sarde + IPC loop
 
     Ok(())
 }
