@@ -1,6 +1,9 @@
 use super::types::{ColumnInfo, QueryResult};
 use tokio_postgres::{types::Type, Row};
 
+/// Builds a PostgreSQL connection string from individual parameters.
+///
+/// Only includes non-empty/non-zero values. Format: `host=X port=Y dbname=Z user=W password=P`.
 pub fn build_connection_string(
     host: &str,
     port: u16,
