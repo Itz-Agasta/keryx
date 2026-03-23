@@ -1,4 +1,4 @@
-use super::helpers::build_query_result;
+use super::helpers::{build_connection_string, build_query_result};
 use super::types::QueryResult;
 use tokio_postgres::{Client, Error, NoTls};
 
@@ -80,35 +80,4 @@ impl PgClient {
             }
         }
     }
-}
-
-/// Builds a PostgreSQL connection string from individual parameters.
-///
-/// Only includes non-empty/non-zero values. Format: `host=X port=Y dbname=Z user=W password=P`.
-fn build_connection_string(
-    host: &str,
-    port: u16,
-    database: &str,
-    user: &str,
-    password: &str,
-) -> String {
-    let mut parts = Vec::new();
-
-    if !host.is_empty() {
-        parts.push(format!("host={}", host));
-    }
-    if port > 0 {
-        parts.push(format!("port={}", port));
-    }
-    if !database.is_empty() {
-        parts.push(format!("dbname={}", database));
-    }
-    if !user.is_empty() {
-        parts.push(format!("user={}", user));
-    }
-    if !password.is_empty() {
-        parts.push(format!("password={}", password));
-    }
-
-    parts.join(" ")
 }

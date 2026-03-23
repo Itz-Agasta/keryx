@@ -1,8 +1,11 @@
+use serde::{Deserialize, Serialize};
+
 /// Result of executing a SQL query.
 ///
 /// For SELECT queries, `columns` and `rows` are populated.
 /// For INSERT/UPDATE/DELETE/DDL, `columns` and `rows` are empty
 /// and `row_count` reflects the number of affected rows.
+#[derive(Serialize, Deserialize)]
 pub struct QueryResult {
     pub columns: Vec<ColumnInfo>,
     pub rows: Vec<Vec<serde_json::Value>>,
@@ -10,6 +13,8 @@ pub struct QueryResult {
 }
 
 /// Metadata about a single column in a query result.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ColumnInfo {
     pub name: String,
     pub data_type: String,
@@ -19,6 +24,8 @@ pub struct ColumnInfo {
 ///
 /// `row_count` is an estimate from `pg_class.reltuples` (updated by ANALYZE),
 /// not an exact count.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TableInfo {
     pub name: String,
     pub schema: String,
@@ -26,6 +33,8 @@ pub struct TableInfo {
 }
 
 /// Full schema description for a table, including all columns.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TableSchema {
     pub name: String,
     pub schema: String,
@@ -33,6 +42,8 @@ pub struct TableSchema {
 }
 
 /// Metadata about a single column in a table schema.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ColumnDetail {
     pub name: String,
     pub data_type: String,
