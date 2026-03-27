@@ -2,22 +2,15 @@ import { spawn, ChildProcess } from "child_process";
 import { join } from "path";
 import type { Request, Response } from "../types/index.js";
 
+// FIXME: Binary path relative to cwd — TUI must be run from apps/tui/
+const backendPath = join(process.cwd(), "..", "..", "backend", "target", "release", "keryx-backend");
+
 export class BackendClient {
   private process: ChildProcess | null = null;
   private messageQueue: ((response: Response) => void)[] = [];
   private buffer = "";
 
   async start(): Promise<void> {
-    const backendPath = join(
-      process.cwd(),
-      "..",
-      "..",
-      "backend",
-      "target",
-      "release",
-      "keryx-backend",
-    );
-
     return new Promise((resolve, reject) => {
       const proc = spawn(backendPath, [], {
         stdio: ["pipe", "pipe", "pipe"],
@@ -55,7 +48,7 @@ export class BackendClient {
             }
           })
           .catch(reject);
-      }, 100);
+      }, 500);
     });
   }
 
@@ -73,7 +66,7 @@ export class BackendClient {
 
     return new Promise((resolve, reject) => {
       console.error("[TUI Request]:", JSON.stringify(request));
-      
+
       const timeout = setTimeout(() => {
         const index = this.messageQueue.indexOf(resolve as (response: Response) => void);
         if (index > -1) {

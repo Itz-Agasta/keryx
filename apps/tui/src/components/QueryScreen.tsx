@@ -23,11 +23,19 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
   const [showTableBrowser, setShowTableBrowser] = useState(true);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [scrollY, setScrollY] = useState(0);
+  const [scrollX, setScrollX] = useState(0);
 
   // Load tables on mount
   useEffect(() => {
     loadTables();
   }, []);
+
+  // Reset scroll when new results arrive
+  useEffect(() => {
+    setScrollY(0);
+    setScrollX(0);
+  }, [result]);
 
   const loadTables = async () => {
     setIsLoadingTables(true);
@@ -52,20 +60,24 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
     setIsExecuting(true);
     setError(null);
 
-    const response = await backend.send({ type: "execute", payload: { query } });
+    try {
+      const response = await backend.send({ type: "execute", payload: { query } });
 
-    if (response.type === "queryResult") {
-      setResult(response.payload);
-      if (!history.includes(query)) {
-        setHistory((prev) => [...prev, query]);
+      if (response.type === "queryResult") {
+        setResult(response.payload);
+        if (!history.includes(query)) {
+          setHistory((prev) => [...prev, query]);
+        }
+      } else if (response.type === "error") {
+        setError(response.payload.message);
+        setResult(null);
       }
-    } else if (response.type === "error") {
-      setError(response.payload.message);
-      setResult(null);
+    } catch (err) {
+      setError(`Execution failed: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsExecuting(false);
+      setHistoryIndex(-1);
     }
-
-    setIsExecuting(false);
-    setHistoryIndex(-1);
   }, [query, backend, history]);
 
   const handleTableSelect = (tableName: string) => {
@@ -73,6 +85,7 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
     setShowTableBrowser(false);
   };
 
+  // All input handling lives here — no useInput in child components
   useInput((input, key) => {
     if (key.ctrl && input === "c") {
       exit();
@@ -89,6 +102,28 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
     if (key.ctrl && input === "r") {
       loadTables();
     }
+
+    // Arrow keys: navigate history when typing, scroll results when there are results
+    if (result && result.rows.length > 0) {
+      if (key.upArrow) {
+        setScrollY((prev) => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.downArrow) {
+        setScrollY((prev) => Math.min(result.rows.length - 1, prev + 1));
+        return;
+      }
+      if (key.leftArrow) {
+        setScrollX((prev) => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.rightArrow) {
+        setScrollX((prev) => Math.min(result.columns.length - 1, prev + 1));
+        return;
+      }
+    }
+
+    // Fallback: arrow keys navigate query history
     if (key.upArrow && history.length > 0) {
       const newIndex = Math.min(historyIndex + 1, history.length - 1);
       setHistoryIndex(newIndex);
@@ -166,7 +201,7 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
                   {result.rowCount} row{result.rowCount !== 1 ? "s" : ""} returned
                 </Text>
               </Box>
-              <ResultsTable result={result} />
+              <ResultsTable result={result} scrollY={scrollY} scrollX={scrollX} />
             </Box>
           )}
         </Box>
