@@ -1,37 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Box, Text, useInput } from "ink";
+import React, { useState, useEffect } from "react";
+import { Box, Text } from "ink";
 import type { QueryResult } from "../types/index.js";
 
 interface ResultsTableProps {
   result: QueryResult;
+  scrollY: number;
+  scrollX: number;
 }
 
-export const ResultsTable: React.FC<ResultsTableProps> = ({ result }) => {
-  const [scrollY, setScrollY] = useState(0);
-  const [scrollX, setScrollX] = useState(0);
-  const containerRef = useRef<{ rows: number; cols: number }>({ rows: 20, cols: 80 });
+export const ResultsTable: React.FC<ResultsTableProps> = ({ result, scrollY, scrollX }) => {
+  const [visibleRows, setVisibleRows] = useState(20);
 
+  // Track terminal resize
   useEffect(() => {
-    // Get terminal size
-    const rows = process.stdout.rows - 10 || 20;
-    const cols = process.stdout.columns || 80;
-    containerRef.current = { rows, cols };
+    const updateSize = () => {
+      setVisibleRows((process.stdout.rows || 24) - 10);
+    };
+    updateSize();
+    process.stdout.on("resize", updateSize);
+    return () => {
+      process.stdout.off("resize", updateSize);
+    };
   }, []);
-
-  useInput((input, key) => {
-    if (key.upArrow) {
-      setScrollY((prev) => Math.max(0, prev - 1));
-    }
-    if (key.downArrow) {
-      setScrollY((prev) => Math.min(result.rows.length - 1, prev + 1));
-    }
-    if (key.leftArrow) {
-      setScrollX((prev) => Math.max(0, prev - 1));
-    }
-    if (key.rightArrow) {
-      setScrollX((prev) => Math.min(result.columns.length - 1, prev + 1));
-    }
-  });
 
   if (result.rows.length === 0) {
     return (
@@ -42,7 +32,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ result }) => {
   }
 
   const visibleColumns = result.columns.slice(scrollX, scrollX + 5);
-  const visibleRows = result.rows.slice(scrollY, scrollY + containerRef.current.rows);
+  const visibleRowData = result.rows.slice(scrollY, scrollY + visibleRows);
 
   return (
     <Box flexDirection="column">
@@ -63,7 +53,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ result }) => {
       </Box>
 
       {/* Rows */}
-      {visibleRows.map((row, rowIdx) => (
+      {visibleRowData.map((row, rowIdx) => (
         <Box key={rowIdx}>
           {row.slice(scrollX, scrollX + 5).map((cell, cellIdx) => (
             <Box key={cellIdx} width={20} paddingX={1}>
@@ -76,7 +66,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ result }) => {
       ))}
 
       {/* Scroll indicator */}
-      {result.rows.length > containerRef.current.rows && (
+      {result.rows.length > visibleRows && (
         <Box marginTop={1}>
           <Text color="gray">
             Row {scrollY + 1} of {result.rows.length} (Use arrow keys to scroll)
