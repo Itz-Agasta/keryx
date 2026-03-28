@@ -11,14 +11,14 @@ bun run start
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Switch fields (connection screen) |
-| `Enter` | Connect (connection screen) |
-| `Ctrl+E` | Execute query |
-| `Ctrl+T` | Toggle table browser |
-| `Ctrl+R` | Refresh table list |
-| `Ctrl+D` | Disconnect |
-| `Ctrl+C` | Quit |
-| `Up/Down` | Scroll results / navigate query history |
-| `Left/Right` | Scroll results horizontally |
+| Key          | Action                                  |
+| ------------ | --------------------------------------- |
+| `Tab`        | Switch fields (connection screen)       |
+| `Enter`      | Connect (connection screen)             |
+| `Ctrl+E`     | Execute query                           |
+| `Ctrl+T`     | Toggle table browser                    |
+| `Ctrl+R`     | Refresh table list                      |
+| `Ctrl+D`     | Disconnect                              |
+| `Ctrl+C`     | Quit                                    |
+| `Up/Down`    | Scroll results / navigate query history |
+| `Left/Right` | Scroll results horizontally             |

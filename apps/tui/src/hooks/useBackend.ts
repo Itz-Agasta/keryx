@@ -12,7 +12,17 @@ function debugLog(...args: unknown[]): void {
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const backendPath = join(__dirname, "..", "..", "..", "..", "backend", "target", "release", "keryx-backend");
+const backendPath = join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "..",
+  "backend",
+  "target",
+  "release",
+  "keryx-backend",
+);
 
 interface PendingRequest {
   resolve: (response: Response) => void;

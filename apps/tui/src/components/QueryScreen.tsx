@@ -164,11 +164,20 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
       <Box flexDirection="row" flexGrow={1}>
         {/* Table Browser Sidebar */}
         {showTableBrowser && terminalWidth >= 60 && (
-          <Box width={Math.min(30, Math.floor(terminalWidth * 0.3))} flexDirection="column" borderStyle="single" marginRight={1}>
+          <Box
+            width={Math.min(30, Math.floor(terminalWidth * 0.3))}
+            flexDirection="column"
+            borderStyle="single"
+            marginRight={1}
+          >
             <Box paddingX={1}>
               <Text bold>Tables (Ctrl+R to refresh)</Text>
             </Box>
-            <TableBrowser tables={tables} onSelect={handleTableSelect} isLoading={isLoadingTables} />
+            <TableBrowser
+              tables={tables}
+              onSelect={handleTableSelect}
+              isLoading={isLoadingTables}
+            />
           </Box>
         )}
 

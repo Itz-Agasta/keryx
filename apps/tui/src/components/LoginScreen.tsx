@@ -82,7 +82,8 @@ const InputField: React.FC<{
   <Box paddingX={1}>
     <Box width={LABEL_WIDTH}>
       <Text color={isFocused ? COLORS.primary : COLORS.muted}>
-        {isFocused ? "› " : "  "}{label}
+        {isFocused ? "› " : "  "}
+        {label}
       </Text>
     </Box>
     <Box flexGrow={1}>
@@ -103,9 +104,7 @@ const ConnectButton: React.FC<{
   isConnecting: boolean;
 }> = ({ isFocused, isConnecting }) => (
   <Box paddingX={1}>
-    <Text color={isFocused ? COLORS.primary : COLORS.muted}>
-      {isFocused ? "› " : "  "}
-    </Text>
+    <Text color={isFocused ? COLORS.primary : COLORS.muted}>{isFocused ? "› " : "  "}</Text>
     <Text color="white" backgroundColor={COLORS.button} bold>
       {` ${isConnecting ? "Connecting..." : "Connect"} `}
     </Text>
@@ -127,11 +126,7 @@ const KeyboardHints: React.FC = () => (
   </Box>
 );
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({
-  onConnect,
-  error,
-  isConnecting,
-}) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onConnect, error, isConnecting }) => {
   const { stdout } = useStdout();
   const termWidth = stdout?.columns ?? 80;
   const termHeight = stdout?.rows ?? 24;
@@ -160,7 +155,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const updateField = (key: keyof ConnectRequest, value: string) => {
     setConfig((prev) => ({
       ...prev,
-      [key]: key === "port" ? (parseInt(value, 10) || 0) : value,
+      [key]: key === "port" ? parseInt(value, 10) || 0 : value,
     }));
     setValidationError(null);
   };
@@ -232,10 +227,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           ))}
 
           <Box height={1} />
-          <ConnectButton
-            isFocused={focusIndex === FIELDS.length}
-            isConnecting={isConnecting}
-          />
+          <ConnectButton isFocused={focusIndex === FIELDS.length} isConnecting={isConnecting} />
           <Box height={1} />
         </BorderedBox>
       </Box>

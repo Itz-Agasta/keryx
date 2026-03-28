@@ -21,9 +21,7 @@ export const Logo: React.FC<LogoProps> = ({
   letterSpacing = 1,
 }) => {
   // Resolve palette: use array directly, or lookup from PALETTES
-  const colors = Array.isArray(palette)
-    ? palette
-    : (PALETTES[palette] ?? PALETTES["dawn"]);
+  const colors = Array.isArray(palette) ? palette : (PALETTES[palette] ?? PALETTES["dawn"]);
 
   return (
     <Box flexDirection="column" alignItems="center">
