@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, Text, useStdin, useInput } from "ink";
 import { BackendClient } from "./hooks/useBackend.js";
-import { ConnectionScreen } from "./components/ConnectionScreen.js";
+import { LoginScreen } from "./components/LoginScreen.js";
 import { QueryScreen } from "./components/QueryScreen.js";
 import type { ConnectRequest } from "./types/index.js";
 
@@ -119,7 +119,7 @@ const App: React.FC = () => {
 
   if (state === "connecting") {
     return (
-      <ConnectionScreen
+      <LoginScreen
         onConnect={handleConnect}
         error={error || undefined}
         isConnecting={isConnecting}
