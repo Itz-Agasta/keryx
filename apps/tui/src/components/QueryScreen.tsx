@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Box, Text, useInput, useApp } from "ink";
+import { Box, Text, useInput, useApp, useStdout } from "ink";
 import TextInput from "ink-text-input";
 import Divider from "ink-divider";
 import type { QueryResult, TableInfo } from "../types/index.js";
 import { BackendClient } from "../hooks/useBackend.js";
-import { ResultsTable } from "./ResultsTable";
-import { TableBrowser } from "./TableBrowser";
+import { ResultsTable } from "./ResultsTable.js";
+import { TableBrowser } from "./TableBrowser.js";
 
 interface QueryScreenProps {
   backend: BackendClient;
@@ -14,6 +14,8 @@ interface QueryScreenProps {
 
 export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect }) => {
   const { exit } = useApp();
+  const { stdout } = useStdout();
+  const terminalWidth = stdout.columns || 80;
   const [query, setQuery] = useState("SELECT * FROM ");
   const [result, setResult] = useState<QueryResult | null>(null);
   const [tables, setTables] = useState<TableInfo[]>([]);
@@ -27,17 +29,7 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
   const [scrollX, setScrollX] = useState(0);
 
   // Load tables on mount
-  useEffect(() => {
-    loadTables();
-  }, []);
-
-  // Reset scroll when new results arrive
-  useEffect(() => {
-    setScrollY(0);
-    setScrollX(0);
-  }, [result]);
-
-  const loadTables = async () => {
+  const loadTables = useCallback(async () => {
     setIsLoadingTables(true);
     try {
       const response = await backend.send({ type: "getTables" });
@@ -52,7 +44,17 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
     } finally {
       setIsLoadingTables(false);
     }
-  };
+  }, [backend]);
+
+  useEffect(() => {
+    loadTables();
+  }, [loadTables]);
+
+  // Reset scroll when new results arrive
+  useEffect(() => {
+    setScrollY(0);
+    setScrollX(0);
+  }, [result]);
 
   const executeQuery = useCallback(async () => {
     if (!query.trim()) return;
@@ -161,12 +163,21 @@ export const QueryScreen: React.FC<QueryScreenProps> = ({ backend, onDisconnect 
 
       <Box flexDirection="row" flexGrow={1}>
         {/* Table Browser Sidebar */}
-        {showTableBrowser && (
-          <Box width={30} flexDirection="column" borderStyle="single" marginRight={1}>
+        {showTableBrowser && terminalWidth >= 60 && (
+          <Box
+            width={Math.min(30, Math.floor(terminalWidth * 0.3))}
+            flexDirection="column"
+            borderStyle="single"
+            marginRight={1}
+          >
             <Box paddingX={1}>
               <Text bold>Tables (Ctrl+R to refresh)</Text>
             </Box>
-            <TableBrowser tables={tables} onSelect={handleTableSelect} isLoading={isLoadingTables} />
+            <TableBrowser
+              tables={tables}
+              onSelect={handleTableSelect}
+              isLoading={isLoadingTables}
+            />
           </Box>
         )}
 

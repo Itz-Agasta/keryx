@@ -1,13 +1,37 @@
 import { spawn, ChildProcess } from "child_process";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import type { Request, Response } from "../types/index.js";
 
-// FIXME: Binary path relative to cwd — TUI must be run from apps/tui/
-const backendPath = join(process.cwd(), "..", "..", "backend", "target", "release", "keryx-backend");
+const DEBUG = process.env.KERYX_DEBUG === "1";
+
+function debugLog(...args: unknown[]): void {
+  if (DEBUG) {
+    console.error("[Keryx]", ...args);
+  }
+}
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const backendPath = join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "..",
+  "backend",
+  "target",
+  "release",
+  "keryx-backend",
+);
+
+interface PendingRequest {
+  resolve: (response: Response) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
 
 export class BackendClient {
   private process: ChildProcess | null = null;
-  private messageQueue: ((response: Response) => void)[] = [];
+  private pendingRequests: PendingRequest[] = [];
   private buffer = "";
 
   async start(): Promise<void> {
@@ -25,19 +49,18 @@ export class BackendClient {
 
       proc.stdout.on("data", (data: Buffer) => {
         const str = data.toString();
-        console.error("[Backend stdout]:", str.trim());
+        debugLog("stdout:", str.trim());
         this.handleData(str);
       });
 
       proc.stderr.on("data", (data: Buffer) => {
-        console.error("[Backend stderr]:", data.toString().trim());
+        debugLog("stderr:", data.toString().trim());
       });
 
       proc.on("error", (err) => {
         reject(new Error(`Failed to start backend: ${err.message}`));
       });
 
-      // Wait a bit then send ping to verify it's running
       setTimeout(() => {
         this.send({ type: "ping" })
           .then((response) => {
@@ -57,6 +80,10 @@ export class BackendClient {
       this.process.kill();
       this.process = null;
     }
+    for (const pending of this.pendingRequests) {
+      clearTimeout(pending.timer);
+    }
+    this.pendingRequests = [];
   }
 
   async send(request: Request): Promise<Response> {
@@ -65,23 +92,23 @@ export class BackendClient {
     }
 
     return new Promise((resolve, reject) => {
-      console.error("[TUI Request]:", JSON.stringify(request));
+      debugLog("Request:", JSON.stringify(request));
 
-      const timeout = setTimeout(() => {
-        const index = this.messageQueue.indexOf(resolve as (response: Response) => void);
+      const timer = setTimeout(() => {
+        const index = this.pendingRequests.findIndex((p) => p.resolve === wrappedResolve);
         if (index > -1) {
-          this.messageQueue.splice(index, 1);
+          this.pendingRequests.splice(index, 1);
         }
         reject(new Error(`Request timeout: ${JSON.stringify(request)}`));
       }, 30000);
 
       const wrappedResolve = (response: Response) => {
-        clearTimeout(timeout);
-        console.error("[TUI Response]:", JSON.stringify(response));
+        clearTimeout(timer);
+        debugLog("Response:", JSON.stringify(response));
         resolve(response);
       };
 
-      this.messageQueue.push(wrappedResolve);
+      this.pendingRequests.push({ resolve: wrappedResolve, timer });
 
       const json = JSON.stringify(request);
       this.process!.stdin!.write(json + "\n");
@@ -98,12 +125,12 @@ export class BackendClient {
       if (line.trim()) {
         try {
           const response: Response = JSON.parse(line);
-          const handler = this.messageQueue.shift();
-          if (handler) {
-            handler(response);
+          const pending = this.pendingRequests.shift();
+          if (pending) {
+            pending.resolve(response);
           }
         } catch {
-          console.error("Failed to parse response:", line);
+          debugLog("Failed to parse response:", line);
         }
       }
     }

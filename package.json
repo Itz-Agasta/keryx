@@ -10,7 +10,6 @@
     "dev": "bun run --filter '*' dev",
     "build": "bun run --filter '*' build",
     "check-types": "bun run --filter '*' check-types",
-    "dev:native": "bun run --filter native dev",
     "dev:web": "bun run --filter web dev",
     "check": "oxlint && oxfmt --write"
   },
