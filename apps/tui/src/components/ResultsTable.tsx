@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text } from "ink";
+import { Box, Text, useStdout } from "ink";
 import type { QueryResult } from "../types/index.js";
 
 interface ResultsTableProps {
@@ -9,19 +9,19 @@ interface ResultsTableProps {
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({ result, scrollY, scrollX }) => {
+  const { stdout } = useStdout();
   const [visibleRows, setVisibleRows] = useState(20);
 
-  // Track terminal resize
   useEffect(() => {
-    const updateSize = () => {
-      setVisibleRows((process.stdout.rows || 24) - 10);
+    setVisibleRows((stdout.rows || 24) - 10);
+    const handleResize = () => {
+      setVisibleRows((stdout.rows || 24) - 10);
     };
-    updateSize();
-    process.stdout.on("resize", updateSize);
+    stdout.on("resize", handleResize);
     return () => {
-      process.stdout.off("resize", updateSize);
+      stdout.off("resize", handleResize);
     };
-  }, []);
+  }, [stdout]);
 
   if (result.rows.length === 0) {
     return (

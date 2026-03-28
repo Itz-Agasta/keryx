@@ -72,7 +72,7 @@ export const ConnectionScreen: React.FC<ConnectionScreenProps> = ({
               <TextInput
                 value={field.value}
                 onChange={(value: string) => handleChange(field.key, value)}
-                mask={field.mask || ""}
+                mask={field.mask}
                 focus={activeField === index}
               />
             </Box>

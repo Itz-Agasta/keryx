@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import type { TableInfo } from "../types/index.js";
@@ -10,6 +10,13 @@ interface TableBrowserProps {
 }
 
 export const TableBrowser: React.FC<TableBrowserProps> = ({ tables, onSelect, isLoading }) => {
+  const handleSelect = useCallback(
+    (item: { value: string }) => {
+      onSelect(item.value);
+    },
+    [onSelect],
+  );
+
   if (isLoading) {
     return (
       <Box padding={1}>
@@ -21,7 +28,7 @@ export const TableBrowser: React.FC<TableBrowserProps> = ({ tables, onSelect, is
   if (tables.length === 0) {
     return (
       <Box padding={1}>
-        <Text color="gray">No tables found ({tables.length} tables)</Text>
+        <Text color="gray">No tables found</Text>
       </Box>
     );
   }
@@ -30,10 +37,6 @@ export const TableBrowser: React.FC<TableBrowserProps> = ({ tables, onSelect, is
     label: `${table.schema}.${table.name}${table.rowCount !== undefined ? ` (${table.rowCount})` : ""}`,
     value: `${table.schema}.${table.name}`,
   }));
-
-  const handleSelect = (item: { value: string }) => {
-    onSelect(item.value);
-  };
 
   return (
     <Box flexDirection="column" padding={1}>
