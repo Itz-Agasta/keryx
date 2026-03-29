@@ -1,4 +1,5 @@
 use super::types::{ColumnInfo, QueryResult};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use tokio_postgres::{types::Type, Row};
 
 /// Builds a PostgreSQL connection string from individual parameters.
@@ -119,6 +120,29 @@ pub fn pg_value_to_json(row: &Row, idx: usize) -> serde_json::Value {
                 .map(|b| serde_json::Value::from(hex_encode(&b)))
                 .unwrap_or(serde_json::Value::Null)
         }
+
+        // Timestamps
+        Type::TIMESTAMP => row
+            .get::<_, Option<NaiveDateTime>>(idx)
+            .map(|dt| serde_json::Value::from(dt.to_string()))
+            .unwrap_or(serde_json::Value::Null),
+
+        Type::TIMESTAMPTZ => row
+            .get::<_, Option<DateTime<Utc>>>(idx)
+            .map(|dt| serde_json::Value::from(dt.to_rfc3339()))
+            .unwrap_or(serde_json::Value::Null),
+
+        // Date
+        Type::DATE => row
+            .get::<_, Option<NaiveDate>>(idx)
+            .map(|d| serde_json::Value::from(d.to_string()))
+            .unwrap_or(serde_json::Value::Null),
+
+        // Time
+        Type::TIME => row
+            .get::<_, Option<NaiveTime>>(idx)
+            .map(|t| serde_json::Value::from(t.to_string()))
+            .unwrap_or(serde_json::Value::Null),
 
         // Everything else — read as string
         _ => row

@@ -6,6 +6,16 @@ export interface ConnectRequest {
   password: string;
 }
 
+/**
+ * Connection info (without password) for display/state
+ */
+export interface ConnectionInfo {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+}
+
 export interface ExecuteRequest {
   query: string;
 }
