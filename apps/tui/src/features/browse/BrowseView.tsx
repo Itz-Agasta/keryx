@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useInput, useApp } from "ink";
+import { useScreenSize } from "fullscreen-ink";
 import { MainLayout } from "../../layouts/MainLayout.js";
 import { KeyboardHints } from "../../shared/components/KeyboardHints.js";
 import { DatabaseTree } from "./components/DatabaseTree.js";
@@ -32,6 +33,11 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
   onDisconnect,
 }) => {
   const { exit } = useApp();
+  const { height } = useScreenSize();
+
+  // Calculate visible rows for data panel (same calculation as DataPanel)
+  // height - header(2) - footer(1) - panel borders(2) - table header(2) - separator(1) - padding
+  const visibleRows = Math.max(5, height - 10);
 
   // Panel focus management
   const { activePanel, setActivePanel, focusNext } = usePanelFocus({
@@ -210,12 +216,16 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
 
     // Data panel navigation
     if (activePanel === "data" && tableData) {
+      // Calculate max scroll - stop when last row is visible
+      const maxScrollY = Math.max(0, tableData.rows.length - visibleRows);
+      const maxScrollX = Math.max(0, tableData.columns.length - 1);
+      
       if (key.upArrow) {
         setScrollY((prev) => Math.max(0, prev - 1));
         return;
       }
       if (key.downArrow) {
-        setScrollY((prev) => Math.min(tableData.rows.length - 1, prev + 1));
+        setScrollY((prev) => Math.min(maxScrollY, prev + 1));
         return;
       }
       if (key.leftArrow) {
@@ -223,7 +233,7 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
         return;
       }
       if (key.rightArrow) {
-        setScrollX((prev) => Math.min(tableData.columns.length - 1, prev + 1));
+        setScrollX((prev) => Math.min(maxScrollX, prev + 1));
         return;
       }
     }
@@ -278,6 +288,8 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
           onScrollX={setScrollX}
         />
       }
+      leftFocused={activePanel === "tree" && !isQueryPanelOpen}
+      rightFocused={activePanel === "data" && !isQueryPanelOpen}
       bottom={
         <QueryPanel
           backend={backend}

@@ -1,6 +1,7 @@
 import React, { useMemo, type ReactNode } from "react";
 import { Box } from "ink";
 import { useScreenSize } from "fullscreen-ink";
+import { COLORS } from "../shared/theme/colors.js";
 
 interface MainLayoutProps {
   /** Left panel content (tree) */
@@ -19,6 +20,10 @@ interface MainLayoutProps {
   showBottom?: boolean;
   /** Minimum width to show left panel */
   minWidthForSidebar?: number;
+  /** Whether left panel is focused */
+  leftFocused?: boolean;
+  /** Whether right panel is focused */
+  rightFocused?: boolean;
 }
 
 interface LayoutDimensions {
@@ -55,6 +60,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   bottomHeight = 6,
   showBottom = false,
   minWidthForSidebar = 60,
+  leftFocused = false,
+  rightFocused = false,
 }) => {
   const { width, height } = useScreenSize();
 
@@ -71,7 +78,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     const rightWidth = width - leftWidth;
 
     // Calculate main content height
-    // Subtract: header (1-2 lines), footer (1 line), bottom panel if visible
+    // Subtract: header (2 lines), footer (1 line), bottom panel if visible
     const headerHeight = header ? 2 : 0;
     const footerHeight = footer ? 1 : 0;
     const bottomPanelHeight = showBottom ? bottomHeight : 0;
@@ -95,13 +102,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       )}
 
       {/* Main content area */}
-      <Box flexDirection="row" flexGrow={1} height={dimensions.mainHeight}>
+      <Box flexDirection="row" height={dimensions.mainHeight}>
         {/* Left panel (tree) */}
         {dimensions.showSidebar && (
           <Box 
             width={dimensions.leftWidth} 
             height={dimensions.mainHeight}
             flexShrink={0}
+            borderStyle="single"
+            borderColor={leftFocused ? COLORS.borderFocus : COLORS.border}
           >
             {left}
           </Box>
@@ -111,6 +120,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <Box 
           flexGrow={1} 
           height={dimensions.mainHeight}
+          borderStyle="single"
+          borderColor={rightFocused ? COLORS.borderFocus : COLORS.border}
         >
           {right}
         </Box>

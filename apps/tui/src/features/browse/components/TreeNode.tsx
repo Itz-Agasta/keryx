@@ -42,16 +42,6 @@ function getNodeIcon(type: NodeType, isExpanded?: boolean): string {
 }
 
 /**
- * Format row count for display
- */
-function formatRowCount(count?: number): string {
-  if (count === undefined || count < 0) return "";
-  if (count >= 1000000) return `(${(count / 1000000).toFixed(1)}M)`;
-  if (count >= 1000) return `(${(count / 1000).toFixed(1)}K)`;
-  return `(${count})`;
-}
-
-/**
  * Individual tree node component
  * Displays a single node in the database tree
  */
@@ -64,7 +54,6 @@ export const TreeNode: React.FC<TreeNodeProps> = ({
   parentPrefix,
 }) => {
   const icon = getNodeIcon(node.type, node.isExpanded);
-  const rowCountStr = node.type === "table" ? formatRowCount(node.rowCount) : "";
 
   // Build prefix for this node
   const connector = isLast ? TREE_ICONS.lastBranch : TREE_ICONS.branch;
@@ -96,11 +85,6 @@ export const TreeNode: React.FC<TreeNodeProps> = ({
       <Text color={textColor} bold={isSelected}>
         {node.name}
       </Text>
-
-      {/* Row count for tables */}
-      {rowCountStr && (
-        <Text color={COLORS.textMuted} dimColor> {rowCountStr}</Text>
-      )}
     </Box>
   );
 };

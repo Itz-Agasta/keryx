@@ -209,8 +209,6 @@ export const DatabaseTree: React.FC<DatabaseTreeProps> = ({
   return (
     <Box
       flexDirection="column"
-      borderStyle="single"
-      borderColor={isFocused ? COLORS.borderFocus : COLORS.border}
       paddingX={1}
     >
       {/* Header */}
