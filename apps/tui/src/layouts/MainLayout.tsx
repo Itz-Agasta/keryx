@@ -68,11 +68,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const dimensions = useMemo((): LayoutDimensions => {
     const showSidebar = width >= minWidthForSidebar;
     
-    // Calculate left panel width (30% with min/max constraints)
+    // ═══════════════════════════════════════════════════════════════════════
+    // TREE PANEL WIDTH CONFIGURATION
+    // ═══════════════════════════════════════════════════════════════════════
+    // To change the tree panel width, modify these values:
+    //   - 0.20 = 20% of screen width (percentage)
+    //   - Math.max(18, ...) = minimum width of 18 characters
+    //   - Math.min(..., 30) = maximum width of 30 characters
+    // ═══════════════════════════════════════════════════════════════════════
     let leftWidth = 0;
     if (showSidebar) {
-      leftWidth = Math.floor(width * 0.3);
-      leftWidth = Math.max(20, Math.min(40, leftWidth));
+      leftWidth = Math.floor(width * 0.20);  // 20% of screen width
+      leftWidth = Math.max(18, Math.min(leftWidth, 30));  // min 18, max 30
     }
 
     const rightWidth = width - leftWidth;

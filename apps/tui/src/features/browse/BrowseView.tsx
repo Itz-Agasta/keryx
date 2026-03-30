@@ -38,6 +38,9 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
   // Calculate visible rows for data panel (same calculation as DataPanel)
   // height - header(2) - footer(1) - panel borders(2) - table header(2) - separator(1) - padding
   const visibleRows = Math.max(5, height - 10);
+  
+  // Maximum visible columns (same as DataPanel)
+  const maxVisibleColumns = 8;
 
   // Panel focus management
   const { activePanel, setActivePanel, focusNext } = usePanelFocus({
@@ -216,9 +219,9 @@ export const BrowseView: React.FC<BrowseViewProps> = ({
 
     // Data panel navigation
     if (activePanel === "data" && tableData) {
-      // Calculate max scroll - stop when last row is visible
+      // Calculate max scroll - stop when last row/column is visible
       const maxScrollY = Math.max(0, tableData.rows.length - visibleRows);
-      const maxScrollX = Math.max(0, tableData.columns.length - 1);
+      const maxScrollX = Math.max(0, tableData.columns.length - maxVisibleColumns);
       
       if (key.upArrow) {
         setScrollY((prev) => Math.max(0, prev - 1));

@@ -74,19 +74,18 @@ export const DataPanel: React.FC<DataPanelProps> = ({
   data,
   isLoading,
   error,
-  isFocused,
   scrollY,
   scrollX,
 }) => {
   const { height, width: screenWidth } = useScreenSize();
 
-  // Calculate the data panel width (screen minus tree panel ~30%)
-  const treeWidth = Math.max(20, Math.min(40, Math.floor(screenWidth * 0.3)));
+  // Calculate the data panel width (screen minus tree panel ~20%)
+  const treeWidth = Math.max(18, Math.min(30, Math.floor(screenWidth * 0.20)));
   const panelWidth = screenWidth - treeWidth;
 
   // Calculate visible area
   const visibleRows = Math.max(5, height - 10);
-  const maxVisibleColumns = 8; // Allow more columns
+  const maxVisibleColumns = 8;
 
   // Get visible data slice
   const visibleData = useMemo(() => {
@@ -182,7 +181,9 @@ export const DataPanel: React.FC<DataPanelProps> = ({
   // Check if we can scroll (more data than visible)
   const canScrollDown = scrollY + visibleRows < data.rows.length;
   const canScrollUp = scrollY > 0;
-  const canScroll = data.rows.length > visibleRows;
+  const canScrollRight = scrollX + maxVisibleColumns < data.columns.length;
+  const canScrollLeft = scrollX > 0;
+  const canScroll = data.rows.length > visibleRows || data.columns.length > maxVisibleColumns;
 
   return (
     <Box
@@ -207,7 +208,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({
 
       {/* Column headers */}
       <Box>
-        {scrollX > 0 && <Text color={COLORS.textMuted}>‹ </Text>}
+        {canScrollLeft && <Text color={COLORS.textMuted}>‹ </Text>}
         {columns.map((col, idx) => (
           <Box key={col.name} width={columnWidths[idx]! + 2}>
             <Text color={COLORS.primary} bold>
@@ -216,9 +217,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({
             <Text color={COLORS.border}> │</Text>
           </Box>
         ))}
-        {scrollX + maxVisibleColumns < data.columns.length && (
-          <Text color={COLORS.textMuted}> ›</Text>
-        )}
+        {canScrollRight && <Text color={COLORS.textMuted}> ›</Text>}
       </Box>
 
       {/* Header separator */}
@@ -260,7 +259,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({
       {canScroll && (
         <Box marginTop={1}>
           <Text color={COLORS.textMuted} dimColor>
-            ↑↓ scroll{canScrollUp && " ▲"}{canScrollDown && " ▼"}
+            ↑↓ scroll{canScrollUp && " ▲"}{canScrollDown && " ▼"}{canScrollLeft && " ◀"}{canScrollRight && " ▶"}
           </Text>
         </Box>
       )}
