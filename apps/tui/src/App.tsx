@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, Text, useStdin, useInput } from "ink";
 import { BackendClient } from "./hooks/useBackend.js";
-import { LoginScreen } from "./components/LoginScreen.js";
-import { QueryScreen } from "./components/QueryScreen.js";
-import type { ConnectRequest } from "./types/index.js";
+import { LoginScreen } from "./features/login/LoginScreen.js";
+import { BrowseView } from "./features/browse/BrowseView.js";
+import type { ConnectRequest, ConnectionInfo } from "./types/index.js";
 
 type AppState = "starting" | "connecting" | "connected" | "error";
 
@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [state, setState] = useState<AppState>("starting");
   const [error, setError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connection, setConnection] = useState<ConnectionInfo | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -45,6 +46,13 @@ const App: React.FC = () => {
 
         if (response.type === "connected") {
           setIsConnecting(false);
+          // Store connection info (without password)
+          setConnection({
+            host: config.host,
+            port: config.port,
+            database: config.database,
+            user: config.user,
+          });
           setState("connected");
         } else if (response.type === "error") {
           setError(response.payload.message);
@@ -65,6 +73,7 @@ const App: React.FC = () => {
       // Ignore disconnect errors
     }
     setState("connecting");
+    setConnection(null);
     setError(null);
     setIsConnecting(false);
   }, [backend]);
@@ -127,7 +136,22 @@ const App: React.FC = () => {
     );
   }
 
-  return <QueryScreen backend={backend} onDisconnect={handleDisconnect} />;
+  // Connected state - show the new BrowseView
+  if (!connection) {
+    return (
+      <Box padding={1}>
+        <Text color="red">Error: Connection info missing</Text>
+      </Box>
+    );
+  }
+
+  return (
+    <BrowseView
+      backend={backend}
+      connection={connection}
+      onDisconnect={handleDisconnect}
+    />
+  );
 };
 
 export default App;

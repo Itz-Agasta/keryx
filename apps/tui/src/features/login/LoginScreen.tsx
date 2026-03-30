@@ -1,18 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
 import TextInput from "ink-text-input";
-import { Logo } from "./Logo.js";
-import type { ConnectRequest } from "../types/index.js";
-
-// Theme colors
-const COLORS = {
-  primary: "cyan",
-  button: "#4052D6", // https://www.figma.com/colors/blue/
-  text: "white",
-  muted: "gray",
-  success: "green",
-  error: "red",
-} as const;
+import { Logo } from "./components/Logo.js";
+import { COLORS } from "../../shared/theme/colors.js";
+import type { ConnectRequest } from "../../types/index.js";
 
 interface LoginScreenProps {
   onConnect: (config: ConnectRequest) => void;
@@ -55,17 +46,17 @@ const BorderedBox: React.FC<{
 
   return (
     <Box flexDirection="column">
-      <Text color={COLORS.muted}>{topBorder}</Text>
+      <Text color={COLORS.textMuted}>{topBorder}</Text>
       <Box flexDirection="column">
         {React.Children.map(children, (child) => (
           <Box>
-            <Text color={COLORS.muted}>│</Text>
+            <Text color={COLORS.textMuted}>│</Text>
             <Box width={innerWidth}>{child}</Box>
-            <Text color={COLORS.muted}>│</Text>
+            <Text color={COLORS.textMuted}>│</Text>
           </Box>
         ))}
       </Box>
-      <Text color={COLORS.muted}>{`└${"─".repeat(innerWidth)}┘`}</Text>
+      <Text color={COLORS.textMuted}>{`└${"─".repeat(innerWidth)}┘`}</Text>
     </Box>
   );
 };
@@ -81,7 +72,7 @@ const InputField: React.FC<{
 }> = ({ label, value, onChange, isFocused, mask, placeholder }) => (
   <Box paddingX={1}>
     <Box width={LABEL_WIDTH}>
-      <Text color={isFocused ? COLORS.primary : COLORS.muted}>
+      <Text color={isFocused ? COLORS.primary : COLORS.textMuted}>
         {isFocused ? "› " : "  "}
         {label}
       </Text>
@@ -104,8 +95,8 @@ const ConnectButton: React.FC<{
   isConnecting: boolean;
 }> = ({ isFocused, isConnecting }) => (
   <Box paddingX={1}>
-    <Text color={isFocused ? COLORS.primary : COLORS.muted}>{isFocused ? "› " : "  "}</Text>
-    <Text color="white" backgroundColor={COLORS.button} bold>
+    <Text color={isFocused ? COLORS.primary : COLORS.textMuted}>{isFocused ? "› " : "  "}</Text>
+    <Text color="white" backgroundColor={COLORS.accent} bold>
       {` ${isConnecting ? "Connecting..." : "Connect"} `}
     </Text>
   </Box>
@@ -114,13 +105,13 @@ const ConnectButton: React.FC<{
 // Keyboard shortcut hints
 const KeyboardHints: React.FC = () => (
   <Box flexDirection="column" alignItems="center">
-    <Text color={COLORS.muted} dimColor>
+    <Text color={COLORS.textMuted} dimColor>
       <Text color={COLORS.text}>↑↓</Text> Navigate
-      <Text color={COLORS.muted}> • </Text>
+      <Text color={COLORS.textMuted}> • </Text>
       <Text color={COLORS.text}>Tab</Text> Next
-      <Text color={COLORS.muted}> • </Text>
+      <Text color={COLORS.textMuted}> • </Text>
       <Text color={COLORS.text}>Enter</Text> Connect
-      <Text color={COLORS.muted}> • </Text>
+      <Text color={COLORS.textMuted}> • </Text>
       <Text color={COLORS.text}>Ctrl+C</Text> Exit
     </Text>
   </Box>
