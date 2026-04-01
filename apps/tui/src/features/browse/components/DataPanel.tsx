@@ -74,19 +74,18 @@ export const DataPanel: React.FC<DataPanelProps> = ({
   data,
   isLoading,
   error,
-  isFocused,
   scrollY,
   scrollX,
 }) => {
   const { height, width: screenWidth } = useScreenSize();
 
-  // Calculate the data panel width (screen minus tree panel ~30%)
-  const treeWidth = Math.max(20, Math.min(40, Math.floor(screenWidth * 0.3)));
+  // Calculate the data panel width (screen minus tree panel ~20%)
+  const treeWidth = Math.max(18, Math.min(30, Math.floor(screenWidth * 0.20)));
   const panelWidth = screenWidth - treeWidth;
 
   // Calculate visible area
   const visibleRows = Math.max(5, height - 10);
-  const maxVisibleColumns = 8; // Allow more columns
+  const maxVisibleColumns = 8;
 
   // Get visible data slice
   const visibleData = useMemo(() => {
@@ -109,15 +108,11 @@ export const DataPanel: React.FC<DataPanelProps> = ({
     return (
       <Box
         flexDirection="column"
-        borderStyle="single"
-        borderColor={isFocused ? COLORS.borderFocus : COLORS.border}
-        padding={2}
-        width="100%"
-        height="100%"
-        alignItems="center"
-        justifyContent="center"
+        paddingX={1}
+        paddingY={1}
+        flexGrow={1}
       >
-        <Box flexDirection="column" alignItems="center">
+        <Box flexDirection="column" alignItems="center" justifyContent="center" flexGrow={1}>
           <Text color={COLORS.primary}>Table Data</Text>
           <Box marginTop={1}>
             <Text color={COLORS.textMuted}>Select a table from the tree to view data</Text>
@@ -137,11 +132,8 @@ export const DataPanel: React.FC<DataPanelProps> = ({
     return (
       <Box
         flexDirection="column"
-        borderStyle="single"
-        borderColor={isFocused ? COLORS.borderFocus : COLORS.border}
-        padding={1}
-        width="100%"
-        height="100%"
+        paddingX={1}
+        flexGrow={1}
       >
         <Box marginBottom={1}>
           <Text color={COLORS.primary}>
@@ -158,11 +150,8 @@ export const DataPanel: React.FC<DataPanelProps> = ({
     return (
       <Box
         flexDirection="column"
-        borderStyle="single"
-        borderColor={COLORS.error}
-        padding={1}
-        width="100%"
-        height="100%"
+        paddingX={1}
+        flexGrow={1}
       >
         <Box marginBottom={1}>
           <Text color={COLORS.primary}>
@@ -179,11 +168,8 @@ export const DataPanel: React.FC<DataPanelProps> = ({
     return (
       <Box
         flexDirection="column"
-        borderStyle="single"
-        borderColor={isFocused ? COLORS.borderFocus : COLORS.border}
-        padding={1}
-        width="100%"
-        height="100%"
+        paddingX={1}
+        flexGrow={1}
       >
         <Text color={COLORS.textMuted}>No data available</Text>
       </Box>
@@ -192,14 +178,18 @@ export const DataPanel: React.FC<DataPanelProps> = ({
 
   const { columns, rows, columnWidths } = visibleData;
 
+  // Check if we can scroll (more data than visible)
+  const canScrollDown = scrollY + visibleRows < data.rows.length;
+  const canScrollUp = scrollY > 0;
+  const canScrollRight = scrollX + maxVisibleColumns < data.columns.length;
+  const canScrollLeft = scrollX > 0;
+  const canScroll = data.rows.length > visibleRows || data.columns.length > maxVisibleColumns;
+
   return (
     <Box
       flexDirection="column"
-      borderStyle="single"
-      borderColor={isFocused ? COLORS.borderFocus : COLORS.border}
       paddingX={1}
-      width="100%"
-      height="100%"
+      flexGrow={1}
     >
       {/* Table header info */}
       <Box marginBottom={1}>
@@ -209,16 +199,16 @@ export const DataPanel: React.FC<DataPanelProps> = ({
         <Text color={COLORS.textMuted}>
           {" "}({data.rowCount.toLocaleString()} rows)
         </Text>
-        {(scrollX > 0 || scrollY > 0) && (
+        {canScroll && (
           <Text color={COLORS.textMuted} dimColor>
-            {" "}• Scroll: [{scrollY + 1}-{Math.min(scrollY + visibleRows, data.rows.length)}/{data.rows.length}]
+            {" "}• [{scrollY + 1}-{Math.min(scrollY + visibleRows, data.rows.length)}/{data.rows.length}]
           </Text>
         )}
       </Box>
 
       {/* Column headers */}
       <Box>
-        {scrollX > 0 && <Text color={COLORS.textMuted}>‹ </Text>}
+        {canScrollLeft && <Text color={COLORS.textMuted}>‹ </Text>}
         {columns.map((col, idx) => (
           <Box key={col.name} width={columnWidths[idx]! + 2}>
             <Text color={COLORS.primary} bold>
@@ -227,9 +217,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({
             <Text color={COLORS.border}> │</Text>
           </Box>
         ))}
-        {scrollX + maxVisibleColumns < data.columns.length && (
-          <Text color={COLORS.textMuted}> ›</Text>
-        )}
+        {canScrollRight && <Text color={COLORS.textMuted}> ›</Text>}
       </Box>
 
       {/* Header separator */}
@@ -267,11 +255,11 @@ export const DataPanel: React.FC<DataPanelProps> = ({
         </Box>
       ))}
 
-      {/* Scroll indicators */}
-      {data.rows.length > visibleRows && (
+      {/* Scroll indicators - only show if there's more data to scroll */}
+      {canScroll && (
         <Box marginTop={1}>
           <Text color={COLORS.textMuted} dimColor>
-            ↑↓ to scroll • {scrollY > 0 && "▲ "}{scrollY + visibleRows < data.rows.length && "▼"}
+            ↑↓ scroll{canScrollUp && " ▲"}{canScrollDown && " ▼"}{canScrollLeft && " ◀"}{canScrollRight && " ▶"}
           </Text>
         </Box>
       )}
